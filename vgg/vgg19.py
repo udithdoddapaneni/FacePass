@@ -55,7 +55,6 @@ class VGG19(nn.Module):
 
             nn.MaxPool2d(2)
         )
-
         self.classifier = nn.Sequential(
             nn.Linear(49*512, 4096),
             nn.ReLU(),
@@ -65,11 +64,9 @@ class VGG19(nn.Module):
             nn.Dropout(),
             nn.Linear(4096, 1000),
         )
-
     def forward(self, x:torch.Tensor):
         x = self.features(x)
         return self.classifier(x)
-    
     def embeddings(self, x:torch.Tensor):
         return self.features(x).flatten().detach().numpy()
     

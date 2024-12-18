@@ -35,7 +35,7 @@ class VGGFACE(nn.Module):
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(2)
 
-        self.features = [
+        self._features = [
             self.conv1_1, self.relu,
             self.conv1_2, self.relu,
             self.maxpool,
@@ -56,12 +56,21 @@ class VGGFACE(nn.Module):
             self.maxpool
         ]
 
-        self.classifier = [
+        self._classifier = [
             self.fc6, self.relu,
             self.fc7, self.relu,
             self.fc8
         ]
-
+    @property
+    def features(self, x):
+        for layer in self.features:
+            x = layer(x)
+        return x
+    @property
+    def classifier(self, x):
+        for layer in self._classifier:
+            x = layer(x)
+        return x
     def forward(self, x:torch.Tensor):
         x = self.features(x)
         return self.classifier(x)
