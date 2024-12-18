@@ -22,8 +22,13 @@ class YOLO:
         with open("coco.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
     def get_patches(self, img):
+        patches = []
         for (x1, y1), (x2, y2), color, confidence, label in self.forward(img):
-            yield img[y1:y2, x1:x2]
+            if (x1 == x2 or y1 == y2):
+                continue
+            print((x1, y1), (x2, y2))
+            patches.append(img[y1:y2, x1:x2])
+        return patches
     def forward(self, img):
         height, width, channels = img.shape
 
@@ -54,7 +59,8 @@ class YOLO:
                     # Rectangle coordinates
                     x = int(center_x - w / 2)
                     y = int(center_y - h / 2)
-
+                    if x < 0 or y < 0:
+                        continue
                     boxes.append([x, y, w, h])
                     confidences.append(float(class_confidence))
                     class_ids.append(class_id)
@@ -69,6 +75,7 @@ class YOLO:
                 color = (0, 255, 0)  # Green box
                 if label == "person":
                     yield (x + X1_OFFSET, y + Y1_OFFSET), (x + w + X2_OFFSET, y + h + Y2_OFFSET), color, confidence, label
+    __call__ = get_patches
     
 def display(yolo_model:YOLO):
     cam = cv2.VideoCapture(0)
@@ -76,6 +83,7 @@ def display(yolo_model:YOLO):
         ret, img = cam.read()
         if not ret:
             print("unable to record")
+            continue
         for (x1, y1), (x2, y2), color, confidence, label in yolo_model.forward(img):
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
             cv2.putText(img, f"{label} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)

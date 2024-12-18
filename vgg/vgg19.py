@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-import numpy as np
 
 KERNEL_SIZE = (3,3)
 
@@ -69,7 +68,7 @@ class VGG19(nn.Module):
         return self.classifier(x)
     def embeddings(self, x:torch.Tensor):
         return self.features(x).flatten().detach().numpy()
-    
+    __call__ = embeddings
 
 MODEL_19 = VGG19()
 MODEL_19.load_state_dict(torch.load("models/vgg19-dcbb9e9d.pth"), strict=True)

@@ -1,7 +1,7 @@
 import torch
 from torch import nn
-from collections import OrderedDict
 from warnings import filterwarnings
+from torchvision.transforms import ToTensor, Resize, Normalize, Compose
 
 filterwarnings("ignore")
 
@@ -61,12 +61,12 @@ class VGGFACE(nn.Module):
             self.fc7, self.relu,
             self.fc8
         ]
-    @property
+        self.transform = Compose([ToTensor(), Resize((224, 224)), Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
     def features(self, x):
-        for layer in self.features:
+        x = self.transform(x)
+        for layer in self._features:
             x = layer(x)
         return x
-    @property
     def classifier(self, x):
         for layer in self._classifier:
             x = layer(x)
@@ -74,9 +74,9 @@ class VGGFACE(nn.Module):
     def forward(self, x:torch.Tensor):
         x = self.features(x)
         return self.classifier(x)
-    
     def embeddings(self, x:torch.Tensor):
         return self.features(x).flatten().detach().numpy()
+    __call__ = embeddings
     
 MODEL_FACE = VGGFACE()
 MODEL_FACE.load_state_dict(torch.load("models/vgg_face_dag.pth"), strict=True)
