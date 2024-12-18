@@ -74,17 +74,7 @@ class VGG19(nn.Module):
         return self.features(x).flatten().detach().numpy()
     
 
-MODEL = VGG19()
-state_dict = torch.load("models/vgg19-dcbb9e9d.pth")
-MODEL.load_state_dict(state_dict, strict=True)
-
+MODEL_19 = VGG19()
+MODEL_19.load_state_dict(torch.load("models/vgg19-dcbb9e9d.pth"), strict=True)
 if __name__ == "__main__":
-    print(state_dict.keys())
-    print()
-    print(MODEL.state_dict().keys())
-    print()
-
-    print(MODEL.state_dict()["classifier.0.weight"].shape)
-
-
-    print(state_dict["classifier.0.weight"].shape)
+    print(MODEL_19.state_dict().keys())
