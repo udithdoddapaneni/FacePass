@@ -1,11 +1,11 @@
-from yolo.yolo import YOLO, display
+from yolo.yoloFace import YOLOFace
 from vgg.vgg_face import MODEL_FACE
 from typing import Callable
 import cv2
 
 class VideoStream:
     def __init__(self):
-        self.yolo_model = YOLO()
+        self.yolo_model = YOLOFace()
     def stream(self):
         cam = cv2.VideoCapture(0)
         while True:

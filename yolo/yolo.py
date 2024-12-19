@@ -5,19 +5,11 @@ import numpy as np
 X1_OFFSET, X2_OFFSET = 0,0
 Y1_OFFSET, Y2_OFFSET = 0,0
 
-net = cv2.dnn.readNet("models/yolov3-tiny.weights", "configs/yolov3-tiny.cfg")
-layer_names = net.getLayerNames()
-output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
-classes = []
-with open("coco.names", "r") as f:
-    classes = [line.strip() for line in f.readlines()]
-color = "green"
-
 class YOLO:
     def __init__(self):
         self.net = cv2.dnn.readNet("models/yolov3-tiny.weights", "configs/yolov3-tiny.cfg")
-        self.layer_names = net.getLayerNames()
-        self.output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+        self.layer_names = self.net.getLayerNames()
+        self.output_layers = [self.layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
         self.classes = []
         with open("coco.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
@@ -34,10 +26,10 @@ class YOLO:
 
         # Prepare the image for YOLO
         blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
-        net.setInput(blob)
+        self.net.setInput(blob)
 
         # Run the forward pass
-        outs = net.forward(output_layers)
+        outs = self.net.forward(self.output_layers)
 
         # Processing the output
         class_ids = []
@@ -70,7 +62,7 @@ class YOLO:
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
-                label = str(classes[class_ids[i]])
+                label = str(self.classes[class_ids[i]])
                 confidence = confidences[i]
                 color = (0, 255, 0)  # Green box
                 if label == "person":
@@ -85,6 +77,7 @@ def display(yolo_model:YOLO):
             print("unable to record")
             continue
         for (x1, y1), (x2, y2), color, confidence, label in yolo_model.forward(img):
+            print(x1, y1, x2, y2)
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
             cv2.putText(img, f"{label} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         cv2.imshow("Camera Feed", img)

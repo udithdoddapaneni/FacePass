@@ -31,7 +31,6 @@ class VGGFACE(nn.Module):
         self.fc6 = nn.Linear(49*512, 4096)
         self.fc7 = nn.Linear(4096, 4096)
         self.fc8 = nn.Linear(4096, 2622)
-
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(2)
 
@@ -53,7 +52,8 @@ class VGGFACE(nn.Module):
             self.conv5_1, self.relu,
             self.conv5_2, self.relu,
             self.conv5_3, self.relu,
-            self.maxpool
+            self.maxpool,
+            nn.Flatten(start_dim=0)
         ]
 
         self._classifier = [
@@ -61,7 +61,30 @@ class VGGFACE(nn.Module):
             self.fc7, self.relu,
             self.fc8
         ]
-        self.transform = Compose([ToTensor(), Resize((224, 224)), Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
+
+        self._embedder = [
+            self.conv1_1, self.relu,
+            self.conv1_2, self.relu,
+            self.maxpool,
+            self.conv2_1, self.relu,
+            self.conv2_2, self.relu,
+            self.maxpool,
+            self.conv3_1, self.relu,
+            self.conv3_2, self.relu,
+            self.conv3_3, self.relu,
+            self.maxpool,
+            self.conv4_1, self.relu,
+            self.conv4_2, self.relu,
+            self.conv4_3, self.relu,
+            self.maxpool,
+            self.conv5_1, self.relu,
+            self.conv5_2, self.relu,
+            self.conv5_3, self.relu,
+            self.maxpool,
+            nn.Flatten(start_dim=0),
+            self.fc6,
+        ]
+        self.transform = Compose([ToTensor() ,Resize((224, 224)), Normalize(mean=(93.59396362304688/255, 104.76238250732422/255, 129.186279296875/255), std=(1, 1, 1))])
     def features(self, x):
         x = self.transform(x)
         for layer in self._features:
@@ -71,11 +94,16 @@ class VGGFACE(nn.Module):
         for layer in self._classifier:
             x = layer(x)
         return x
+    def embedder(self, x):
+        x = self.transform(x)
+        for layer in self._embedder:
+            x = layer(x)
+        return x
     def forward(self, x:torch.Tensor):
         x = self.features(x)
         return self.classifier(x)
     def embeddings(self, x:torch.Tensor):
-        return self.features(x).flatten().detach().numpy()
+        return self.embedder(x).flatten().detach().numpy()
     __call__ = embeddings
     
 MODEL_FACE = VGGFACE()
