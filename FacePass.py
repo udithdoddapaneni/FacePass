@@ -1,12 +1,15 @@
-from yolo.yoloFace import YOLOFace
+from yolo.yoloFace import YOLO_FACE
 from vgg.vgg_face import MODEL_FACE
 from typing import Callable
-from database.naive_retriever import unlock_lock
+from database.retriever import BruteForceStore
 import cv2
+
+
+DB = BruteForceStore()
 
 class VideoStream:
     def __init__(self):
-        self.yolo_model = YOLOFace()
+        self.yolo_model = YOLO_FACE
     def stream(self):
         cam = cv2.VideoCapture(0)
         while True:
@@ -39,9 +42,8 @@ class pipeline:
         video = self.VideoStream()
         embeddings = self.FeatureExtractorStream(video)
         for embedding in embeddings:
-            if unlock_lock(embedding):
+            if DB(embedding):
                 print("unlocked")
-                return
     __call__ = forward
 
 if __name__ == "__main__":

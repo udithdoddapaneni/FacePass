@@ -5,6 +5,8 @@ Be in root directory: FacePass/
 3. Download the models from the links given in refs.txt and add them in models
 4. To run the program: python3 FacePass.py
 
+## Additional Instruction:
+When taking images to store in database please remove your glasses. Similarly when unlocking the facelock remove your glasses
 
 ## Future work:
 1. Make a better database or use existing ones like FAISS
