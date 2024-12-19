@@ -5,6 +5,7 @@ from torchvision.transforms import ToTensor, Resize, Normalize, Compose
 
 filterwarnings("ignore")
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 KERNEL_SIZE = (3,3)
 
 class VGGFACE(nn.Module):
@@ -87,6 +88,7 @@ class VGGFACE(nn.Module):
         self.transform = Compose([ToTensor() ,Resize((224, 224)), Normalize(mean=(93.59396362304688/255, 104.76238250732422/255, 129.186279296875/255), std=(1, 1, 1))])
     def features(self, x):
         x = self.transform(x)
+        x = x.to(DEVICE)
         for layer in self._features:
             x = layer(x)
         return x
@@ -96,6 +98,7 @@ class VGGFACE(nn.Module):
         return x
     def embedder(self, x):
         x = self.transform(x)
+        x = x.to(DEVICE)
         for layer in self._embedder:
             x = layer(x)
         return x
@@ -103,11 +106,12 @@ class VGGFACE(nn.Module):
         x = self.features(x)
         return self.classifier(x)
     def embeddings(self, x:torch.Tensor):
-        return self.embedder(x).flatten().detach().numpy()
+        return self.embedder(x).cpu().flatten().detach().numpy()
     __call__ = embeddings
     
 MODEL_FACE = VGGFACE()
 MODEL_FACE.load_state_dict(torch.load("models/vgg_face_dag.pth"), strict=True)
+MODEL_FACE.to(DEVICE)
 
 if __name__ == "__main__":
     print(MODEL_FACE.state_dict().keys())

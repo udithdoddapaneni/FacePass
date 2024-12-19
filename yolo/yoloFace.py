@@ -16,7 +16,7 @@ class YOLOFace:
             patches.append(img[y1:y2, x1:x2])
         return patches
     def forward(self, img):
-        boxes = self.net.predict(img)[0].boxes.xyxy.cpu().detach().numpy()
+        boxes = self.net.predict(img, verbose=False)[0].boxes.xyxy.cpu().detach().numpy()
         for x1, y1, x2, y2 in boxes:
             yield (int(x1.item()), int(y1.item())), (int(x2.item()), int(y2.item()))
     __call__ = get_patches

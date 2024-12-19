@@ -1,6 +1,7 @@
 from yolo.yoloFace import YOLOFace
 from vgg.vgg_face import MODEL_FACE
 from typing import Callable
+from database.naive_retriever import unlock_lock
 import cv2
 
 class VideoStream:
@@ -28,7 +29,6 @@ class FeatureExtractorStream:
         for image in video:
             for patch in image:
                 embeddings = self.model(patch)
-                print(embeddings)
                 yield embeddings
     __call__ = stream
 class pipeline:
@@ -39,7 +39,9 @@ class pipeline:
         video = self.VideoStream()
         embeddings = self.FeatureExtractorStream(video)
         for embedding in embeddings:
-            print(embedding)
+            if unlock_lock(embedding):
+                print("unlocked")
+                return
     __call__ = forward
 
 if __name__ == "__main__":
